@@ -19,29 +19,31 @@ services:
   api-gw:
     build: https://github.com/noolingo/api-gw.git
     ports:
-      - "8080:8080"
+      - "8088:8088"
     environment:
+      - NOOLINGO_LISTEN_PORTS_HTTP=8088
       - AUTH_ACCESS_SECRET_KEY=qwerty
       - NOOLINGO_GRPC_CLIENTS_CARDSERVICE=9002
       - NOOLINGO_GRPC_CLIENTS_DECKSERVICE=9003
       - NOOLINGO_GRPC_CLIENTS_STATISTICSERVICE=9004
-      - NOOLINGO_GRPC_CLIENTS_USERSERVICE=user-service:9001
+      - NOOLINGO_GRPC_CLIENTS_USERSERVICE=user-service:8088
 
 
   user-service:
     build: https://github.com/noolingo/user-service.git
     ports:
-      - "9001:9001"
+      - "19001:8088"
     depends_on:
       - db
       - api-gw
     environment:
       - AUTH_ACCESS_SECRET_KEY=qwerty
       - AUTH_REFRESH_SECRET_KEY=qwerty
-      - USER_SERVICE_MYSQL_DSN=mysql://root:secret@tcp(localhost:3306)/noolingo
+      - USER_SERVICE_MYSQL_DSN=mysql://root:secret@tcp(db:3306)/noolingo
+      - USER_SERVICE_PORT=8088
 
   migration:
-    restart: always
+    # restart: always
     build: https://github.com/MelnikovNA/noolingo-migration.git
     depends_on:
       - db
@@ -54,6 +56,8 @@ services:
   swagger:
     build: https://github.com/noolingo/swagger.git
     ports:
-      - "8000:8000"
+      - "8080:8088"
     depends_on:
       - api-gw
+    environment:
+      - NOOLINGO_LISTEN_PORTS_HTTP=8088
