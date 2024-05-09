@@ -11,4 +11,4 @@ docker compose -f Docker-compose.yml build
 ```
 docker compose -f Docker-compose.yml up
 ```
-swagger: 'http://localhost:8080/'
+'swagger: http://localhost:8080/'
