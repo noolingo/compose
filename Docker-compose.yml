@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+
+  db:
+    restart: always
+    image: mysql:8.4.0
+    ports:
+      - "33061:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DB=noolingo
+      - MYSQL_DSN=mysql://root:secret@tcp(localhost:3306)/noolingo
+    command: --init-file /data/application/init.sql
+    volumes:
+      - ./init.sql:/data/application/init.sql
+      - ./data:/var/lib/mysql
+
+  api-gw:
+    build: https://github.com/noolingo/api-gw.git
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTH_ACCESS_SECRET_KEY=qwerty
+      - NOOLINGO_GRPC_CLIENTS_CARDSERVICE=9002
+      - NOOLINGO_GRPC_CLIENTS_DECKSERVICE=9003
+      - NOOLINGO_GRPC_CLIENTS_STATISTICSERVICE=9004
+      - NOOLINGO_GRPC_CLIENTS_USERSERVICE=user-service:9001
+
+
+  user-service:
+    build: https://github.com/noolingo/user-service.git
+    ports:
+      - "9001:9001"
+    depends_on:
+      - db
+      - api-gw
+    environment:
+      - AUTH_ACCESS_SECRET_KEY=qwerty
+      - AUTH_REFRESH_SECRET_KEY=qwerty
+      - USER_SERVICE_MYSQL_DSN=mysql://root:secret@tcp(localhost:3306)/noolingo
+
+  migration:
+    restart: always
+    build: https://github.com/MelnikovNA/noolingo-migration.git
+    depends_on:
+      - db
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASS=secret
+      - MYSQL_DB=noolingo
+      - MYSQL_DSN=mysql://root:secret@tcp(db:3306)/noolingo
+    
+  swagger:
+    build: https://github.com/noolingo/swagger.git
+    ports:
+      - "8000:8000"
+    depends_on:
+      - api-gw
