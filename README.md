@@ -1,4 +1,6 @@
-Утановить Docker-compose
+1)Утановить Docker-compose
+2)Забилдить
+3)Запустить
 
 Билд Docker-compose
 ```
