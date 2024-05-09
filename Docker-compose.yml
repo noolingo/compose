@@ -44,7 +44,7 @@ services:
 
   migration:
     # restart: always
-    build: https://github.com/MelnikovNA/noolingo-migration.git
+    build: https://github.com/noolingo/migrations.git
     depends_on:
       - db
     environment:
