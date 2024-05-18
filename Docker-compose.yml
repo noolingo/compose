@@ -10,7 +10,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=secret
       - MYSQL_DB=noolingo
-      - MYSQL_DSN=mysql://root:secret@tcp(localhost:3306)/noolingo
+      - MYSQL_DSN=mysql://root:secret@tcp(host.docker.internal:3306)/noolingo
     command: --init-file /data/application/init.sql
     volumes:
       - ./init.sql:/data/application/init.sql
@@ -23,7 +23,7 @@ services:
     environment:
       - NOOLINGO_LISTEN_PORTS_HTTP=8088
       - AUTH_ACCESS_SECRET_KEY=qwerty
-      - NOOLINGO_GRPC_CLIENTS_CARDSERVICE=9002
+      - NOOLINGO_GRPC_CLIENTS_CARDSERVICE=card-service:8088
       - NOOLINGO_GRPC_CLIENTS_DECKSERVICE=9003
       - NOOLINGO_GRPC_CLIENTS_STATISTICSERVICE=9004
       - NOOLINGO_GRPC_CLIENTS_USERSERVICE=user-service:8088
@@ -41,6 +41,20 @@ services:
       - AUTH_REFRESH_SECRET_KEY=qwerty
       - USER_SERVICE_MYSQL_DSN=mysql://root:secret@tcp(db:3306)/noolingo
       - USER_SERVICE_PORT=8088
+
+
+  card-service:
+    build: https://github.com/noolingo/card-service.git
+    ports:
+      - "19002:8088"
+    depends_on:
+      - db
+      - api-gw
+    environment:
+      - CARD_SERVICE_PORT=8088
+      - CARD_SERVICE_MYSQL_DSN=mysql://root:secret@tcp(db:3306)/noolingo
+      - YANDEX_API_YANDEX_API=dict.1.1.20240427T123751Z.a672cfe8b5588488.3c5b9072b80e4edbc9279ed2b62c014c722d5ebf
+
 
   migration:
     build: https://github.com/noolingo/migrations.git
@@ -60,3 +74,5 @@ services:
       - api-gw
     environment:
       - NOOLINGO_LISTEN_PORTS_HTTP=8088
+
+
