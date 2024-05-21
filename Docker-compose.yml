@@ -24,7 +24,7 @@ services:
       - NOOLINGO_LISTEN_PORTS_HTTP=8088
       - AUTH_ACCESS_SECRET_KEY=qwerty
       - NOOLINGO_GRPC_CLIENTS_CARDSERVICE=card-service:8088
-      - NOOLINGO_GRPC_CLIENTS_DECKSERVICE=9003
+      - NOOLINGO_GRPC_CLIENTS_DECKSERVICE=deck-service:8088
       - NOOLINGO_GRPC_CLIENTS_STATISTICSERVICE=9004
       - NOOLINGO_GRPC_CLIENTS_USERSERVICE=user-service:8088
 
@@ -55,6 +55,19 @@ services:
       - CARD_SERVICE_MYSQL_DSN=mysql://root:secret@tcp(db:3306)/noolingo
       - YANDEX_API_YANDEX_API=dict.1.1.20240427T123751Z.a672cfe8b5588488.3c5b9072b80e4edbc9279ed2b62c014c722d5ebf
 
+
+  deck-service:
+    build: https://github.com/noolingo/deck-service.git
+    ports:
+      - "19003:8088"
+    depends_on:
+      - db
+      - api-gw
+      - card-service
+    environment:
+      - DECK_SERVICE_PORT=8088
+      - DECK_SERVICE_MYSQL_DSN=mysql://root:secret@tcp(db:3306)/noolingo
+      - GRPC_CLIENTS_CARDSERVICE=card-service:8088
 
   migration:
     build: https://github.com/noolingo/migrations.git
